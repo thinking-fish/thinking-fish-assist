@@ -24,7 +24,7 @@ Settings, so a customer cannot point it at someone else's server by mistake.
    Sign in with your thinking.fish account; your normal Microsoft MFA applies. The first sign-in creates
    your Assist account automatically.
 4. New accounts join the **Staff** group automatically, which shares the **Customers** address book
-   (read/write) with you. Admins: console > Users > (user) > edit; tick **Admin** only for people who
+   (read/write) with you. Admins: console > System > **UserManage** > (user) > edit; tick **Admin** only for people who
    manage the console.
 
 ## 3. Helping a customer (attended)
@@ -75,10 +75,10 @@ Not suitable for unattended support: Android requires the user to start screen s
 
 ## 5. Address book and device list
 
-* **Device list** (console > Devices): every installed copy that has reached our server, with ID, host name,
+* **Device list** (console > System > **PeerManage**): every installed copy that has reached our server, with ID, host name,
   OS and last-seen time. Use it to find a customer's ID when they cannot read it out.
 * **Shared address book "Customers"**: owned by the console admin and shared read/write with the **Staff**
-  group (console > Address book collections, share rules). Use one entry per computer: ID, alias
+  group (console > System > **AddressBookNameManage**, share rules). Entries can be added from PeerManage with **AddToAddressBook**. Use one entry per computer: ID, alias
   ("Customer - machine"), a tag per customer, and for unattended computers the saved password. More books
   can be added the same way (e.g. one per large customer).
 * In the app, the **Address book** tab shows the books shared with you once you are signed in.
@@ -118,8 +118,8 @@ user approve the permissions once.
 
 ## 7. Logs and audit
 
-Console (admins): **Login logs** (staff sign-ins), **Connection logs** (who connected to which ID, when,
-from which IP), **File transfer logs**. Session recordings, if switched on, are saved on the computer that
+Console (admins), under System: **LoginLog** (staff sign-ins), **AuditConnLog** (who connected to which ID,
+when, from which IP, and when it closed), **AuditFileLog** (file transfers). Session recordings, if switched on, are saved on the computer that
 recorded them (Settings > Recording), not on the server.
 
 ## 8. If something is wrong
