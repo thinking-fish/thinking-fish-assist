@@ -1,3 +1,5 @@
+/// Thinking Fish Assist: name, server and key baked into this build.
+pub mod branding;
 mod keyboard;
 /// cbindgen:ignore
 pub mod platform;

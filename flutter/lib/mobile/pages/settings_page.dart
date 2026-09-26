@@ -36,7 +36,7 @@ class SettingsPage extends StatefulWidget implements PageShape {
   State<SettingsPage> createState() => _SettingsState();
 }
 
-const url = 'https://rustdesk.com/';
+const url = kTfaSupportUrl;
 
 enum KeepScreenOn {
   never,
@@ -957,10 +957,11 @@ class _SettingsState extends State<SettingsPage> with WidgetsBindingObserver {
                 onPressed: (context) async {
                   await launchUrl(Uri.parse(url));
                 },
-                title: Text(translate("Version: ") + version),
+                title: Text(translate("Version: ") +
+                    '$kTfaProductVersion (RustDesk $version)'),
                 value: Padding(
                   padding: EdgeInsets.symmetric(vertical: 8),
-                  child: Text('rustdesk.com',
+                  child: Text('thinking.fish/assist',
                       style: TextStyle(
                         decoration: TextDecoration.underline,
                       )),
@@ -985,8 +986,14 @@ class _SettingsState extends State<SettingsPage> with WidgetsBindingObserver {
             SettingsTile(
               title: Text(translate("Privacy Statement")),
               onPressed: (context) =>
-                  launchUrlString('https://rustdesk.com/privacy.html'),
+                  launchUrlString(kTfaPrivacyUrl),
               leading: Icon(Icons.privacy_tip),
+            ),
+            // AGPL-3.0: tell every user where the source of this build is.
+            SettingsTile(
+              title: Text('Source code (AGPL-3.0)'),
+              onPressed: (context) => launchUrlString(kTfaSourceUrl),
+              leading: Icon(Icons.code),
             )
           ],
         ),
@@ -1095,15 +1102,14 @@ void showAbout(OverlayDialogManager dialogManager) {
     return CustomAlertDialog(
       title: Text(translate('About RustDesk')),
       content: Wrap(direction: Axis.vertical, spacing: 12, children: [
-        Text('Version: $version'),
+        Text('Version: $kTfaProductVersion (RustDesk $version)'),
         InkWell(
             onTap: () async {
-              const url = 'https://rustdesk.com/';
-              await launchUrl(Uri.parse(url));
+              await launchUrl(Uri.parse(kTfaSupportUrl));
             },
             child: Padding(
               padding: EdgeInsets.symmetric(vertical: 8),
-              child: Text('rustdesk.com',
+              child: Text('thinking.fish/assist',
                   style: TextStyle(
                     decoration: TextDecoration.underline,
                   )),

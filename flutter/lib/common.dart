@@ -251,16 +251,17 @@ class MyTheme {
   MyTheme._();
 
   static const Color grayBg = Color(0xFFEFEFF2);
-  static const Color accent = Color(0xFF0071FF);
-  static const Color accent50 = Color(0x770071FF);
-  static const Color accent80 = Color(0xAA0071FF);
+  // Thinking Fish orange (thinking.fish --orange)
+  static const Color accent = Color(0xFFF26922);
+  static const Color accent50 = Color(0x77F26922);
+  static const Color accent80 = Color(0xAAF26922);
   static const Color canvasColor = Color(0xFF212121);
   static const Color border = Color(0xFFCCCCCC);
   static const Color idColor = Color(0xFF00B6F0);
   static const Color darkGray = Color.fromARGB(255, 148, 148, 148);
   static const Color cmIdColor = Color(0xFF21790B);
   static const Color dark = Colors.black87;
-  static const Color button = Color(0xFF2C8CFF);
+  static const Color button = Color(0xFFF26922);
   static const Color hoverBorder = Color(0xFF999999);
 
   // ListTile
@@ -3036,7 +3037,7 @@ int versionCmp(String v1, String v2) {
 }
 
 String getWindowName({WindowType? overrideType}) {
-  final name = bind.mainGetAppNameSync();
+  final name = kAppDisplayName;
   switch (overrideType ?? kWindowType) {
     case WindowType.Main:
       return name;
@@ -3744,7 +3745,7 @@ Widget loadPowered(BuildContext context) {
     cursor: SystemMouseCursors.click,
     child: GestureDetector(
       onTap: () {
-        launchUrl(Uri.parse('https://rustdesk.com'));
+        launchUrl(Uri.parse('https://github.com/rustdesk/rustdesk'));
       },
       child: Opacity(
           opacity: 0.5,
@@ -4187,7 +4188,7 @@ List<String> getPrinterNames() {
 String _appName = '';
 String get appName {
   if (_appName.isEmpty) {
-    _appName = bind.mainGetAppNameSync();
+    _appName = kAppDisplayName;
   }
   return _appName;
 }

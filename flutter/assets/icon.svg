@@ -1,1 +1,13 @@
-<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xml:space="preserve" viewBox="66.993 897.484 26 26"><linearGradient id="a" x1=".148" x2=".845" y1=".851" y2=".154" gradientTransform="matrix(26.301 0 0 26.331 90.674 911.757)" gradientUnits="userSpaceOnUse"><stop offset="0" stop-color="#0071ff"/><stop offset="1" stop-color="#00bfe1"/></linearGradient><defs><linearGradient xlink:href="#a" id="b" x1=".148" x2=".845" y1=".851" y2=".154" gradientTransform="matrix(26.00048 0 0 25.99935 66.993 897.485)" gradientUnits="userSpaceOnUse"/></defs><path fill="url(#b)" d="m89.318 903.552-2.135 2.122c-.376.337-.558.879-.347 1.337 1.422 2.976.882 6.524-1.452 8.856-2.335 2.331-5.887 2.87-8.866 1.449-.439-.197-.954-.03-1.292.312l-2.17 2.167a1.154 1.154 0 0 0 .208 1.81 13.005 13.005 0 0 0 15.91-1.912 12.97 12.97 0 0 0 1.956-15.887 1.154 1.154 0 0 0-1.812-.254zm-18.467-2.305a12.969 12.969 0 0 0-2.02 15.885 1.154 1.154 0 0 0 1.812.254l2.124-2.11c.385-.336.572-.884.359-1.348-1.423-2.976-.884-6.524 1.451-8.856 2.334-2.332 5.887-2.871 8.866-1.45.434.194.942.033 1.281-.3l2.182-2.18a1.152 1.152 0 0 0-.208-1.81 13.009 13.009 0 0 0-15.893 1.973z"/></svg>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024">
+  <!-- App icon: white rounded tile, as the thinking.fish favicon sits on white -->
+  <rect x="0" y="0" width="1024" height="1024" rx="228" fill="#ffffff"/>
+  <rect x="6" y="6" width="1012" height="1012" rx="222" fill="none" stroke="#e4e4ea" stroke-width="12"/>
+  <g transform="translate(118 118) scale(0.77)"><mask id="cres"><rect x="-200" y="-200" width="1400" height="1400" fill="black"/>
+      <ellipse cx="545" cy="520" rx="365" ry="330" fill="white"/>
+      <ellipse cx="478" cy="505" rx="342" ry="300" fill="black"/></mask>
+    <rect x="-200" y="-200" width="1400" height="1400" fill="#2D5BA8" mask="url(#cres)"/>
+    <g fill="none" stroke="#F26922" stroke-linecap="round">
+      <path stroke-width="100" d="M 392 868 L 486 400 C 508 292 565 250 668 262"/>
+      <path stroke-width="82" d="M 356 478 L 616 478"/>
+    </g></g>
+</svg>

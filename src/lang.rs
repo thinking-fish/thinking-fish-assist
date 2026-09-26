@@ -227,7 +227,13 @@ pub fn translate_locale(name: String, locale: &str) -> String {
                 && !name.starts_with("upgrade_rustdesk_server_pro")
                 && name != "powered_by_me"
             {
-                let app_name = crate::get_app_name();
+                // Thinking Fish Assist: people see the spaced display name, not the
+                // internal folder/service name.
+                let app_name = if crate::get_app_name() == crate::branding::APP_NAME {
+                    crate::branding::DISPLAY_NAME.to_owned()
+                } else {
+                    crate::get_app_name()
+                };
                 if !app_name.contains("RustDesk") {
                     s = s.replace("RustDesk", &app_name);
                 } else {

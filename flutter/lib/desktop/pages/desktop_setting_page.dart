@@ -2437,7 +2437,8 @@ class _AboutState extends State<_About> {
                 height: 8.0,
               ),
               SelectionArea(
-                  child: Text('${translate('Version')}: $version')
+                  child: Text(
+                          '${translate('Version')}: $kTfaProductVersion (RustDesk $version)')
                       .marginSymmetric(vertical: 4.0)),
               SelectionArea(
                   child: Text('${translate('Build Date')}: $buildDate')
@@ -2448,7 +2449,7 @@ class _AboutState extends State<_About> {
                         .marginSymmetric(vertical: 4.0)),
               InkWell(
                   onTap: () {
-                    launchUrlString('https://rustdesk.com/privacy.html');
+                    launchUrlString(kTfaPrivacyUrl);
                   },
                   child: Text(
                     translate('Privacy Statement'),
@@ -2456,14 +2457,23 @@ class _AboutState extends State<_About> {
                   ).marginSymmetric(vertical: 4.0)),
               InkWell(
                   onTap: () {
-                    launchUrlString('https://rustdesk.com');
+                    launchUrlString(kTfaSupportUrl);
                   },
                   child: Text(
                     translate('Website'),
                     style: linkStyle,
                   ).marginSymmetric(vertical: 4.0)),
+              // AGPL-3.0: tell every user where the source of this build is.
+              InkWell(
+                  onTap: () {
+                    launchUrlString(kTfaSourceUrl);
+                  },
+                  child: Text(
+                    'Source code (AGPL-3.0)',
+                    style: linkStyle,
+                  ).marginSymmetric(vertical: 4.0)),
               Container(
-                decoration: const BoxDecoration(color: Color(0xFF2c8cff)),
+                decoration: const BoxDecoration(color: Color(0xFF16161A)),
                 padding:
                     const EdgeInsets.symmetric(vertical: 24, horizontal: 8),
                 child: SelectionArea(
@@ -2474,7 +2484,8 @@ class _AboutState extends State<_About> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            'Copyright © ${DateTime.now().toString().substring(0, 4)} Purslane Tech Pte. Ltd.\n$license',
+                            '$kAppDisplayName © ${DateTime.now().toString().substring(0, 4)} Thinking Fish Ltd.\n'
+                            'Based on RustDesk © Purslane Tech Pte. Ltd., licensed under the GNU AGPL-3.0.\n$license',
                             style: const TextStyle(color: Colors.white),
                           ),
                           Text(

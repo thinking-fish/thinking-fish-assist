@@ -4,6 +4,17 @@ import 'package:flutter_hbb/common.dart';
 import 'package:flutter_hbb/models/state_model.dart';
 import 'package:get/get.dart';
 
+// Thinking Fish Assist branding. The internal app name (bind.mainGetAppNameSync)
+// is "ThinkingFishAssist" because upstream uses it for folders and service names;
+// anything a person reads uses kAppDisplayName instead.
+const String kAppDisplayName = 'Thinking Fish Assist';
+const String kTfaProductVersion = '1.0.0';
+const String kTfaUpstreamVersion = '1.4.9';
+const String kTfaSupportUrl = 'https://thinking.fish/assist';
+const String kTfaPrivacyUrl = 'https://thinking.fish/privacy';
+const String kTfaSourceUrl =
+    'https://github.com/thinking-fish/thinking-fish-assist';
+
 const int kMaxVirtualDisplayCount = 4;
 const int kAllVirtualDisplay = -1;
 

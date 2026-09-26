@@ -71,6 +71,12 @@ int APIENTRY wWinMain(_In_ HINSTANCE instance, _In_opt_ HINSTANCE prev,
       app_name = std::wstring(app_name_buffer);
     }
   }
+  // Thinking Fish Assist: the window title is the display name (Flutter getWindowName
+  // uses kAppDisplayName), and FindWindowW below matches on the title, so use the
+  // same string here or a second launch would not find the running window.
+  if (app_name == L"ThinkingFishAssist") {
+    app_name = L"Thinking Fish Assist";
+  }
 
   // Uri links dispatch
   HWND hwnd = ::FindWindowW(getWindowClassName(), app_name.c_str());

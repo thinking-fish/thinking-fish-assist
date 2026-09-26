@@ -1,0 +1,30 @@
+# Thinking Fish Assist release: push a tag like v1.0.0 (or run it by hand) to build
+# every client and attach them to a GitHub release of that name.
+name: Thinking Fish Assist release
+
+on:
+  push:
+    tags:
+      - "v*"
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: "Release tag to create or update (e.g. v1.0.0 or v1.0.0-test1)"
+        required: true
+        default: "v1.0.0-test"
+      prerelease:
+        description: "Mark as pre-release (keeps it off releases/latest, which the website links to)"
+        type: boolean
+        default: true
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    uses: ./.github/workflows/tfa-build.yml
+    secrets: inherit
+    with:
+      upload-artifact: true
+      upload-tag: ${{ github.event_name == 'push' && github.ref_name || inputs.tag }}
+      prerelease: ${{ github.event_name == 'push' && contains(github.ref_name, '-') || (github.event_name != 'push' && inputs.prerelease) }}

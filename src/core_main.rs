@@ -862,9 +862,10 @@ fn core_main_invoke_new_connection(mut args: std::env::Args) -> Option<Vec<Strin
     #[cfg(windows)]
     {
         use winapi::um::winuser::WM_USER;
+        // Thinking Fish Assist: the main window's title is the display name.
         let res = crate::platform::send_message_to_hnwd(
             &crate::platform::FLUTTER_RUNNER_WIN32_WINDOW_CLASS,
-            &crate::get_app_name(),
+            crate::branding::DISPLAY_NAME,
             (WM_USER + 2) as _, // referred from unilinks desktop pub
             uni_links.as_str(),
             false,
