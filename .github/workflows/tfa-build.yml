@@ -546,6 +546,11 @@ jobs:
       - name: create unsigned dmg
         if: env.UPLOAD_ARTIFACT == 'true'
         run: |
+          # build.py copies the `service` binary into the bundle AFTER Xcode signed it, which
+          # breaks the bundle signature (dyld then refuses FlutterMacOS.framework: "different
+          # Team IDs"). Re-sign the whole bundle ad hoc so the unsigned build actually launches.
+          codesign --force --deep -s - ./flutter/build/macos/Build/Products/Release/ThinkingFishAssist.app
+          codesign --verify --deep --strict ./flutter/build/macos/Build/Products/Release/ThinkingFishAssist.app
           CREATE_DMG="$(command -v create-dmg)"
           CREATE_DMG="$(readlink -f "$CREATE_DMG")"
           sed -i -e 's/MAXIMUM_UNMOUNTING_ATTEMPTS=3/MAXIMUM_UNMOUNTING_ATTEMPTS=7/' "$CREATE_DMG"

@@ -1708,7 +1708,7 @@ md \"{path}\"
 reg add {subkey} /f
 reg add {subkey} /f /v DisplayIcon /t REG_SZ /d \"{display_icon}\"
 reg add {subkey} /f /v DisplayName /t REG_SZ /d \"{display_name}\"
-reg add {subkey} /f /v DisplayVersion /t REG_SZ /d \"{version}\"
+reg add {subkey} /f /v DisplayVersion /t REG_SZ /d \"{product_version}\"
 reg add {subkey} /f /v Version /t REG_SZ /d \"{version}\"
 reg add {subkey} /f /v BuildDate /t REG_SZ /d \"{build_date}\"
 reg add {subkey} /f /v InstallLocation /t REG_SZ /d \"{path}\"
@@ -1732,6 +1732,8 @@ copy /Y \"{tmp_path}\\Uninstall {app_name}.lnk\" \"{path}\\\"
     ",
         display_icon = get_custom_icon(&path, &cur_exe).unwrap_or(exe.to_string()),
         display_name = crate::branding::DISPLAY_NAME,
+        // Thinking Fish Assist: Apps & features shows our product version; `Version` keeps upstream's.
+        product_version = crate::branding::PRODUCT_VERSION,
         version = crate::VERSION.replace("-", "."),
         build_date = crate::BUILD_DATE,
         after_install = get_after_install(
@@ -3322,10 +3324,11 @@ pub fn update_me(debug: bool) -> ResultType<()> {
                 subkey, display_icon
             )
         };
+        let product_version = crate::branding::PRODUCT_VERSION;
         format!(
             "
 {reg_display_icon}
-reg add {subkey} /f /v DisplayVersion /t REG_SZ /d \"{version}\"
+reg add {subkey} /f /v DisplayVersion /t REG_SZ /d \"{product_version}\"
 reg add {subkey} /f /v Version /t REG_SZ /d \"{version}\"
 reg add {subkey} /f /v BuildDate /t REG_SZ /d \"{build_date}\"
 reg add {subkey} /f /v VersionMajor /t REG_DWORD /d {version_major}

@@ -532,6 +532,10 @@ UINT __stdcall CreateStartService(__in MSIHANDLE hInstall)
 
     hr = StringCchPrintfW(szSvcDisplayName, cchSvcDisplayName, L"%ls Service", svcName);
     ExitOnFailure(hr, "Failed to compose a resource identifier string");
+    // Thinking Fish Assist: same display name as the app's own installer (src/platform/windows.rs).
+    if (wcscmp(svcName, L"ThinkingFishAssist") == 0) {
+        StringCchCopyW(szSvcDisplayName, cchSvcDisplayName, L"Thinking Fish Assist Service");
+    }
     if (MyCreateServiceW(svcName, szSvcDisplayName, svcBinary)) {
         WcaLog(LOGMSG_STANDARD, "Service \"%ls\" is created.", svcName);
         if (MyStartServiceW(svcName)) {
