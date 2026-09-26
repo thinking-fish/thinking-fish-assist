@@ -1,20 +1,22 @@
 #!/usr/bin/env python3
 """Draw the Thinking Fish Assist brand artwork as clean SVG.
 
-Source: Andrew's icon sheet of 26 Sep 2026 (reference/andrew-icon-sheet-2026-09-26.jpg).
-That sheet is an AI-generated JPEG, so nothing here is traced or upscaled from
-it: every shape is redrawn from measurements taken off the sheet, and the
-colours were sampled from it (median of each colour region) and then rounded
-to clean values. See the PALETTE comments.
+Source: Andrew's icon sheet v2 of 26 Sep 2026 19:07
+(reference/andrew-icon-sheet-v2-2026-09-26.jpg; it supersedes his first sheet,
+kept alongside for the record). The sheet is an AI-generated JPEG, so nothing
+here is traced or upscaled from it: every shape is redrawn from measurements
+taken off the sheet, and the colours were sampled from it (median of each
+colour region) and then settled on clean values. See the PALETTE comments.
 
 What Andrew drew, and what this script makes of it:
-  * the MARK: a white headset with an orange mic dot, and a blue crescent
-    "swoosh" wrapping round its right-hand side (his small tiles). App icons
-    use the mark only, exactly as his small tiles do.
-  * the FULL LOGO: the mark, a second swoosh, the "thinkingfish" wordmark
-    (thinking in white, fish in orange) and "ASSIST" in wide capitals, on a
-    dark navy-to-blue rounded tile (his large tile). Used where there's room:
-    About box, installer, website hero, guides.
+  * the MARK (his small tiles): a white headset with an orange mic dot at the
+    end of the boom, centred on a navy, white or black tile. No swoosh. App
+    icons use the mark only.
+  * the FULL LOGO (his large tile and the medium white/black ones): the
+    headset above the "thinkingfish" wordmark (thinking white or navy, fish
+    orange), one blue swoosh sweeping from its lower left round the right of
+    "fish" and back underneath, and "ASSIST" in spaced capitals. Used where
+    there is room: About box, installer, website hero, guides.
 
 Run from the repo root:  python3 tfa/brand/draw_brand.py   (then make_icons.py)
 Needs: rsvg-convert, Pillow, fontTools. The two fonts are OFL subsets kept in
@@ -22,8 +24,8 @@ fonts/ (Open Sans ExtraBold Italic for the wordmark, Montserrat Medium for
 ASSIST); the text is converted to outlines, so the SVGs need no fonts to render.
 
 Geometry is written in the "mark grid": units of an 800px enlargement of
-Andrew's small blue tile. The headset is centred on x=380 there and the
-headband's outer radius is 180. place() maps that grid into any target box,
+Andrew's small tiles. The headset is centred on x=400 there, with the band's
+outer edge 216 either side. place() maps that grid into any target box,
 centring the mark by its real rendered bounding box (not by eye), so every
 icon has equal margins.
 """
@@ -66,87 +68,69 @@ def grad(id_, stops, x1=0, y1=0, x2=0, y2=1, user=False):
 
 
 def headset_grad(id_):
-    return grad(id_, HEADSET_WHITE, 0, 217, 0, 560, user=True)
+    return grad(id_, HEADSET_WHITE, 0, 188, 0, 660, user=True)
 
 
 # ---------------------------------------------------------------- the mark
 def headset(fill, dot=ORANGE, bold=False):
-    """Headband, two ear cups, boom and mic dot, in mark-grid units.
+    """Headband, ear cups, boom and mic dot, in mark-grid units (v2 sheet, 26 Sep 19:07).
 
-    bold=True is the small-size master (16-32 px): the same drawing with heavier
-    strokes and a bigger dot, because at 16 px a 40-unit band is under one pixel.
+    Measured off an 800 px enlargement of Andrew's small tiles: the headset is
+    centred on x=400; the band's outer edge is 216 either side and its top is at
+    y=188; the left leg runs on below its ear cup and ends round; the boom leaves
+    the bottom of the right cup and curls left into the orange mic dot, which sits
+    just right of centre at the bottom.
+    bold=True is the small-size master (16-32 px): heavier strokes, bigger dot,
+    because at 16 px a 50-unit band is under a pixel and a half.
     """
-    band = 64 if bold else 40            # headband stroke (sheet: ~40)
-    boom = 40 if bold else 26            # boom stroke (sheet: ~0.6 of the band)
-    # The arch is wider than it is tall (sheet: half-width 180, top at y=225, sides
-    # already vertical by y~345), so it is half an ellipse, then straight legs.
-    HW = 166                             # outer half-width of the band
+    band = 72 if bold else 50            # headband stroke (sheet: ~50)
+    boom = 56 if bold else 40            # boom stroke (sheet: ~0.8 of the band)
+    HW = 216                             # outer half-width of the band
+    cx, cy = 400, 360                    # centre of the arch; sides are vertical below it
     r = HW - band / 2                    # horizontal centreline radius
-    cx, cy = 380, 362                    # centre of the headband arch
-    ry = 145 - band / 2                  # vertical centreline radius: outer top at y=217
-    cw, ch = (96, 170) if bold else (84, 152)    # ear cup size (sheet: ~0.11 x 0.2 of the tile)
-    cup_y = 372 if not bold else 364
-    # left cup x: its inner side lines up with the band's inner edge, so it overhangs outwards
-    lx = cx - HW + band - cw
-    rx_ = 2 * cx - lx - cw               # mirror image on the right
-    dot_r = 60 if bold else 45
-    # Cups are D-shaped on the sheet: big radius on the outside, small on the inside.
+    ry = (cy - 188) - band / 2           # vertical centreline radius: outer top at y=188
+    cw, ch = (104, 176) if bold else (93, 165)   # ear cup size
+    cup_y = 364 if bold else 368
+    over = 58                            # how far a cup sticks out beyond the band
+    lx = cx - HW - over                  # left cup x
+    rx_ = 2 * cx - lx - cw               # right cup, mirrored
+    leg_end = cup_y + ch + 18            # the left leg shows below its cup (sheet: ~y550)
+    dot_r = 70 if bold else 60
+    dot = (f'<circle cx="{cx + 20}" cy="{cup_y + ch + 57}" r="{dot_r}" fill="{dot}"/>')
+    # Cups are D-shaped on the sheet: large radius outside, small inside.
     def cup(x, outer_left):
-        ro, ri = 40, 14
-        if bold:
-            ro, ri = 46, 16
+        ro, ri = (50, 18) if bold else (44, 16)
         y, w, h = cup_y, cw, ch
-        if outer_left:
-            tl, tr, br, bl = ro, ri, ri, ro
-        else:
-            tl, tr, br, bl = ri, ro, ro, ri
+        tl, tr, br, bl = (ro, ri, ri, ro) if outer_left else (ri, ro, ro, ri)
         return (f'<path d="M {x+tl} {y} H {x+w-tr} Q {x+w} {y} {x+w} {y+tr} V {y+h-br} '
                 f'Q {x+w} {y+h} {x+w-br} {y+h} H {x+bl} Q {x} {y+h} {x} {y+h-bl} V {y+tl} '
                 f'Q {x} {y} {x+tl} {y} Z" fill="{fill}"/>')
-    boom_y = cup_y + ch + 6              # the boom runs just under the cups
+    by = cup_y + ch + 64                 # boom's horizontal run (just under the dot's centre)
+    bx = rx_ + cw * 0.3                  # where the boom leaves the right cup
     return (
-        # arch + both legs; the legs end inside the cups so no cap shows
-        f'<path d="M {cx-r} {cup_y+ch-20} V {cy} A {r} {ry} 0 0 1 {cx+r} {cy} V {cup_y+ch-20}" '
-        f'fill="none" stroke="{fill}" stroke-width="{band}"/>'
+        # arch + legs. Round caps: the left leg's end shows under its cup, as drawn.
+        f'<path d="M {cx-r} {leg_end} V {cy} A {r} {ry} 0 0 1 {cx+r} {cy} V {cup_y+ch-30}" '
+        f'fill="none" stroke="{fill}" stroke-width="{band}" stroke-linecap="round"/>'
         + cup(lx, True) + cup(rx_, False)
-        # boom: drops out of the right cup and runs left to the mic
-        + f'<path d="M {rx_+cw*0.35:.0f} {cup_y+ch-48} C {rx_+cw*0.35:.0f} {boom_y-4}, {rx_+cw*0.1:.0f} {boom_y}, '
-          f'{rx_-30:.0f} {boom_y} L {cx+10} {boom_y}" fill="none" stroke="{fill}" stroke-width="{boom}" '
-          f'stroke-linecap="round"/>'
-        + f'<circle cx="{cx-2}" cy="{boom_y-4}" r="{dot_r}" fill="{dot}"/>'
+        # boom: out of the bottom of the right cup, round the corner, left to the mic
+        + f'<path d="M {bx:.0f} {cup_y+ch-40} V {cup_y+ch+6} C {bx:.0f} {by-10}, {bx-22:.0f} {by}, '
+          f'{bx-60:.0f} {by} L {cx+40} {by}" fill="none" stroke="{fill}" stroke-width="{boom}" '
+          f'stroke-linecap="round" stroke-linejoin="round"/>'
+        + dot
     )
 
 
-def swoosh(fill, bold=False):
-    """The crescent round the headset's right side (mark grid).
-
-    Outer edge: tip at top-left, widest at the right, tip at bottom-left.
-    The inner edge returns closer in; the gap between the two is the stroke,
-    thickest at the right (60 units on the sheet) and tapering to both tips.
-    """
-    t = 104 if bold else 70              # thickness at the widest point
-    top_tip = (300, 146) if bold else (262, 140)
-    bot_tip = (318, 648) if bold else (280, 652)
-    ox = 730 if not bold else 742        # rightmost outer x
-    ix = ox - t
-    return (f'<path d="M {top_tip[0]} {top_tip[1]} C 520 136, {ox} 250, {ox} 392 '
-            f'C {ox} 545, 520 640, {bot_tip[0]} {bot_tip[1]} '
-            f'C 500 {624 - (6 if bold else 0)}, {ix} 525, {ix} 395 '
-            f'C {ix} 265, 505 {165 + (6 if bold else 0)}, {top_tip[0]} {top_tip[1]} Z" fill="{fill}"/>')
-
-
 def mark(theme="dark", bold=False, ids="m"):
-    """(defs, body) for the mark in the mark grid.
+    """(defs, body) for the app-icon mark: the headset and mic dot only (v2: no swoosh).
     theme: dark (white headset, for navy/black tiles), light (navy headset, white tile),
-    mono-white / mono-black (single colour: tray, Android monochrome + notification)."""
+    mono-white / mono-black (single colour: tray template, Android monochrome + notification)."""
     if theme == "dark":
-        defs = headset_grad(f"{ids}hs") + grad(f"{ids}sw", SWOOSH_DARK, 0.3, 0, 0.7, 1)
-        return defs, swoosh(f"url(#{ids}sw)", bold) + headset(f"url(#{ids}hs)", ORANGE, bold)
+        return headset_grad(f"{ids}hs"), headset(f"url(#{ids}hs)", ORANGE, bold)
     if theme == "light":
-        defs = grad(f"{ids}sw", SWOOSH_LIGHT, 0.3, 0, 0.7, 1)
-        return defs, swoosh(f"url(#{ids}sw)", bold) + headset(NAVY_INK, ORANGE, bold)
+        return "", headset(NAVY_INK, ORANGE, bold)
     colour = "#FFFFFF" if theme == "mono-white" else "#000000"
-    return "", swoosh(colour, bold) + headset(colour, colour, bold)
+    return "", headset(colour, colour, bold)
+
 
 
 # ---------------------------------------------------------------- measuring + placing
@@ -248,10 +232,10 @@ def tile_bg(x, y, size, rx, kind="navy", ids="t"):
     return "", b
 
 
-# Mark size inside a tile: the bbox of the mark takes 72% of the tile's width, as on
-# Andrew's small tiles (0.73); the bold small-size master takes 80%.
-MARK_IN_TILE = 0.72
-MARK_IN_TILE_BOLD = 0.80
+# Mark size inside a tile: the headset's bbox takes 70% of the tile's width, as on
+# Andrew's small tiles (0.70); the bold small-size master takes 78%.
+MARK_IN_TILE = 0.70
+MARK_IN_TILE_BOLD = 0.78
 
 
 def app_tile(kind="navy", bold=False, size=1024, inset=0, rx_frac=0.2237):
@@ -265,46 +249,58 @@ def app_tile(kind="navy", bold=False, size=1024, inset=0, rx_frac=0.2237):
     return d + md, b + place(md, mb, (inset + (t - m) / 2, inset + (t - m) / 2, m, m))
 
 
+def wordmark_block(dark=True, ids="W"):
+    """'thinkingfish' with the blue swoosh sweeping from its lower left, round the
+    right of 'fish' and back underneath, then ASSIST below. Laid out on the large
+    tile's own 1000-unit grid (v2 sheet): wordmark x 100-830, baseline 728; swoosh
+    tip at (470,566), out to x=945, tail under 'fish' to (590,782); ASSIST baseline 862.
+    Returns (defs, body)."""
+    sw = SWOOSH_DARK if dark else SWOOSH_LIGHT
+    d = grad(f"{ids}sw", sw, 0, 0, 1, 1)
+    ink = f"url(#{ids}wm)" if dark else NAVY_INK
+    if dark:
+        d += grad(f"{ids}wm", HEADSET_WHITE)
+    b = ('<path d="M 470 566 C 700 546, 945 588, 945 650 C 945 716, 800 770, 590 783 '
+         'C 782 762, 914 712, 914 655 C 914 604, 720 572, 470 566 Z" fill="url(#%ssw)"/>' % ids)
+    wm, _ = wordmark(100, 728, 730, ink, ORANGE)
+    b += wm
+    b += caps("ASSIST", 500, 862, 590, "#FFFFFF" if dark else NAVY_INK)
+    return d, b
+
+
 def full_logo_tile(kind="navy"):
-    """Andrew's large tile: mark, two swooshes, thinkingfish, ASSIST. Laid out on the
-    sheet's own 1000-unit grid, drawn into a 1024 canvas."""
+    """Andrew's large tile (v2): the headset above, then the wordmark block. Drawn on
+    the sheet's 1000-unit grid into a 1024 canvas."""
     d, b = tile_bg(0, 0, 1000, 200, kind, ids="L")
     dark = kind != "white"
     ink = "url(#Lhs)" if dark else NAVY_INK
-    sw = SWOOSH_DARK if dark else SWOOSH_LIGHT
-    d += headset_grad("Lhs") + grad("Lsw", sw, 0.3, 0, 0.7, 1) + grad("Lsw2", sw, 0.5, 0, 0.5, 1)
-    # upper swoosh, wider than on the small tiles (sheet: tip 405,133; right edge 912; tip 378,556)
-    b += ('<path d="M 405 133 C 690 125, 912 235, 912 352 C 912 470, 700 550, 378 556 '
-          'C 660 535, 850 462, 850 362 C 850 252, 680 152, 405 133 Z" fill="url(#Lsw)"/>')
-    # lower swoosh behind the right of the wordmark (sheet: 650,572 -> 936,660 -> 590,788)
-    b += ('<path d="M 650 572 C 822 570, 938 612, 938 662 C 938 722, 822 774, 590 790 '
-          'C 792 766, 902 716, 902 666 C 902 618, 802 588, 650 572 Z" fill="url(#Lsw2)"/>')
-    # headset: mark-grid headset mapped so its centre is at (481, 355), scale 160/180
-    b += f'<g transform="translate({481 - 380 * 0.95:.1f} {345 - 405 * 0.95:.1f}) scale(0.95)">{headset(ink)}</g>'
-    wm, _ = wordmark(95, 735, 767, "url(#Lwm)" if dark else NAVY_INK, ORANGE)
-    d += grad("Lwm", HEADSET_WHITE)
-    b += wm
-    b += caps("ASSIST", 502, 862, 575, "#FFFFFF" if dark else NAVY_INK)
-    return d, f'<g transform="scale(1.024)">{b}</g>'
+    d += headset_grad("Lhs")
+    # headset: sheet centre x=501, band outer half-width 189 (ours is 216) -> scale 0.875,
+    # band top at y=148 (ours at 188)
+    s_ = 189 / 216
+    b += f'<g transform="translate({501 - 400 * s_:.1f} {148 - 188 * s_:.1f}) scale({s_:.4f})">{headset(ink)}</g>'
+    wd, wb = wordmark_block(dark, ids="L")
+    return d + wd, f'<g transform="scale(1.024)">{b}{wb}</g>'
 
 
 def lockup(theme="dark"):
-    """Horizontal lockup for the app header and web: mark, then thinkingfish over ASSIST.
-    720 x 180 viewBox."""
+    """Horizontal lockup for the app header, installer banner and web: the headset,
+    then the wordmark block (thinkingfish + swoosh + ASSIST). 720 x 180 viewBox."""
     md, mb = mark(theme, ids="k")
-    b = place(md, mb, (8, 14, 190, 152))
-    ink = "#FFFFFF" if theme == "dark" else NAVY_INK
-    wm, _ = wordmark(222, 96, 480, ink, ORANGE)
-    b += wm
-    b += caps("ASSIST", 222 + 240, 166, 300, ink)
-    return md, b
+    b = place(md, mb, (6, 18, 170, 144))
+    wd, wb = wordmark_block(theme == "dark", ids="k")
+    # the block spans x 95-948, y 546-866 on its grid: fit it into x 196-714, y 10-172
+    s_ = min((714 - 196) / (948 - 95), (172 - 10) / (866 - 546))
+    b += f'<g transform="translate({196 - 95 * s_:.1f} {10 - 546 * s_:.1f}) scale({s_:.4f})">{wb}</g>'
+    return md + wd, b
+
 
 
 def android_foreground(theme="dark"):
     """Adaptive icon foreground, 108dp canvas: keep the mark inside the 66dp safe circle.
-    The mark's bbox diagonal must fit, so it gets 58% of the width."""
+    The headset's bbox diagonal must fit the safe circle, so it gets 56% of the width."""
     md, mb = mark(theme, ids="a")
-    s = 1024 * 0.58
+    s = 1024 * 0.56
     return md, place(md, mb, ((1024 - s) / 2, (1024 - s) / 2, s, s))
 
 
@@ -329,7 +325,7 @@ def main():
     d, b = lockup("light"); out["logo-light.svg"] = svg(720, 180, d, b, "Horizontal lockup for light backgrounds.")
     d, b = android_foreground("dark"); out["android-foreground.svg"] = svg(1024, 1024, d, b, "Android adaptive foreground (108dp canvas, 66dp safe zone).")
     md, mb = mark("mono-white", ids="a")
-    s = 1024 * 0.58
+    s = 1024 * 0.56
     out["android-monochrome.svg"] = svg(1024, 1024, md, place(md, mb, ((1024 - s) / 2, (1024 - s) / 2, s, s)), "Android 13 themed-icon layer (alpha only).")
     d, b = tile_bg(0, 0, 1024, 0, "navy", ids="g")
     out["android-background.svg"] = svg(1024, 1024, d, b, "Android adaptive background: the navy tile, square (the launcher masks it).")
