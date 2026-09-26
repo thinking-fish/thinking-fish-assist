@@ -1760,6 +1760,7 @@ cscript \"{uninstall_shortcut}\"
 {tray_shortcuts}
 {shortcuts}
 {legacy_shortcut_dels}
+{refresh_icons}
 copy /Y \"{tmp_path}\\Uninstall {app_name}.lnk\" \"{path}\\\"
 {dels}
 {import_config}
@@ -1770,6 +1771,10 @@ copy /Y \"{tmp_path}\\Uninstall {app_name}.lnk\" \"{path}\\\"
         display_icon = get_custom_icon(&path, &cur_exe).unwrap_or(exe.to_string()),
         display_name = crate::branding::DISPLAY_NAME,
         legacy_shortcut_dels = legacy_shortcut_dels(),
+        // Thinking Fish Assist: an upgrade keeps the exe path, so Explorer keeps showing the
+        // OLD icon from its cache until something refreshes it (seen on the 1.0.0 -> 1.0.1
+        // test). ie4uinit -show rebuilds the icon cache for the user running the installer.
+        refresh_icons = "if exist \"%SystemRoot%\\System32\\ie4uinit.exe\" \"%SystemRoot%\\System32\\ie4uinit.exe\" -show",
         // Thinking Fish Assist: Apps & features shows our product version; `Version` keeps upstream's.
         product_version = crate::branding::PRODUCT_VERSION,
         version = crate::VERSION.replace("-", "."),
