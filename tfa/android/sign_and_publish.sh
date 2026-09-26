@@ -29,16 +29,16 @@ api -o "$W/a.zip" "https://api.github.com/repos/$REPO/actions/artifacts/$AID/zip
 unzip -q -o "$W/a.zip" -d "$W"
 
 # 2. align + sign (v1-v3 schemes); apksigner replaces the CI debug signature
-"$BT/zipalign" -f -p 4 "$W/ThinkingFishAssist-android.apk" "$W/aligned.apk"
+"$BT/zipalign" -f -p 4 "$W/Thinking-Fish-Assist-android.apk" "$W/aligned.apk"
 "$BT/apksigner" sign --ks "$KS" --ks-key-alias tfassist --ks-pass "pass:$PASS" --key-pass "pass:$PASS" \
-  --out "$W/ThinkingFishAssist-android.apk" "$W/aligned.apk"
-"$BT/apksigner" verify --print-certs "$W/ThinkingFishAssist-android.apk" | grep -E "SHA-256|Signer #1 certificate DN"
-(cd "$W" && sha256sum ThinkingFishAssist-android.apk > SHA256SUMS-android.txt && cat SHA256SUMS-android.txt)
+  --out "$W/Thinking-Fish-Assist-android.apk" "$W/aligned.apk"
+"$BT/apksigner" verify --print-certs "$W/Thinking-Fish-Assist-android.apk" | grep -E "SHA-256|Signer #1 certificate DN"
+(cd "$W" && sha256sum Thinking-Fish-Assist-android.apk > SHA256SUMS-android.txt && cat SHA256SUMS-android.txt)
 
 # 3. attach to the release (replacing any earlier upload of the same name)
 REL=$(api "https://api.github.com/repos/$REPO/releases/tags/$TAG")
 RID=$(echo "$REL" | python3 -c "import json,sys;print(json.load(sys.stdin)['id'])")
-for f in ThinkingFishAssist-android.apk SHA256SUMS-android.txt; do
+for f in Thinking-Fish-Assist-android.apk SHA256SUMS-android.txt; do
   OLD=$(echo "$REL" | python3 -c "import json,sys;print(next((a['id'] for a in json.load(sys.stdin)['assets'] if a['name']=='$f'),''))")
   [ -n "$OLD" ] && api -X DELETE "https://api.github.com/repos/$REPO/releases/assets/$OLD" >/dev/null
   api -X POST -H "Content-Type: application/octet-stream" --data-binary @"$W/$f" \

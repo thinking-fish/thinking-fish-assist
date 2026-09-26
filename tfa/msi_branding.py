@@ -5,9 +5,12 @@ Upstream's res/msi/preprocess.py already swaps "RustDesk" for --app-name
 everywhere. Our --app-name is the internal, space-free "ThinkingFishAssist"
 (it names the install folder, the .exe, the Windows service and registry keys,
 all of which upstream assumes are alphanumeric). This script only changes the
-strings a person READS in the installer and in Settings > Apps, to
-"Thinking Fish Assist". It never touches identifiers, paths or shortcut names,
-because the app's own uninstall code deletes shortcuts by the internal name.
+strings a person READS in the installer, in Settings > Apps and in the Start
+menu, to "Thinking Fish Assist": the package name, the Add/Remove entry, dialog
+text, and (since 1.0.1) the Start menu folder and the shortcut names. It never
+touches identifiers or paths (install folder, exe, service, registry keys).
+Shortcut names must match src/platform/windows.rs shortcut_name(), which the
+app uses when it creates or deletes its own Startup "... Tray" shortcut.
 
 Run from res/msi after preprocess.py:  python ../../tfa/msi_branding.py
 """
@@ -44,8 +47,20 @@ for wxl in (HERE / "Package/Language").glob("*.wxl"):
     for line in s.splitlines(keepends=True):
         m = re.search(r'<String Id="([^"]+)"', line)
         if m and (m.group(1).endswith("_Desc") or m.group(1) == "AR_Comment" or "Welcome" in m.group(1)
-                  or m.group(1).startswith(("Dlg", "Install", "Error", "Service_", "MyInstallDirDlg"))):
+                  or m.group(1).startswith(("Dlg", "Install", "Error", "Service_", "MyInstallDirDlg"))
+            # shortcut names: Start menu, desktop, Startup "Tray", "Uninstall ..."
+            or m.group(1) in ("SC_Client", "SC_Client_Tray", "SC_Uninstall")):
             line = line.replace(INTERNAL, DISPLAY)
         out.append(line)
     wxl.write_text("".join(out), encoding="utf-8")
     print(f"{wxl}: display strings updated")
+
+# Start menu folder: named after the display name, like the shortcuts inside it.
+sub(HERE / "Package/Components/Folders.wxs",
+    r'<Directory Id="App.StartMenu" Name="\$\(var\.Product\)" />',
+    f'<Directory Id="App.StartMenu" Name="{DISPLAY}" />')
+
+# When the service is stopped, the MSI deletes the Startup tray shortcut by name.
+sub(HERE / "Package/Components/RustDesk.wxs",
+    r'Property="ShortcutName" Value="\$\(var\.Product\) Tray"',
+    f'Property="ShortcutName" Value="{DISPLAY} Tray"')

@@ -419,6 +419,10 @@ def build_flutter_dmg(version, features):
         f'FLUTTER_XCODE_ARCHS={mac_arch} FLUTTER_XCODE_ONLY_ACTIVE_ARCH=YES flutter build macos --release')
     # Thinking Fish Assist: the bundle is named after PRODUCT_NAME (AppInfo.xcconfig)
     system2('cp -rf ../target/release/service ./build/macos/Build/Products/Release/ThinkingFishAssist.app/Contents/MacOS/')
+    # Thinking Fish Assist: the spaced name people see (Finder, Dock, menu bar) comes from
+    # this localized strings file; the bundle keeps its space-free name. See Info.plist.
+    system2('mkdir -p ./build/macos/Build/Products/Release/ThinkingFishAssist.app/Contents/Resources/en.lproj')
+    system2('cp -f ./macos/Runner/en.lproj/InfoPlist.strings ./build/macos/Build/Products/Release/ThinkingFishAssist.app/Contents/Resources/en.lproj/')
     '''
     system2(
         "create-dmg --volname \"RustDesk Installer\" --window-pos 200 120 --window-size 800 400 --icon-size 100 --app-drop-link 600 185 --icon RustDesk.app 200 190 --hide-extension RustDesk.app rustdesk.dmg ./build/macos/Build/Products/Release/RustDesk.app")

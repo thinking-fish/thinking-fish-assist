@@ -8,7 +8,7 @@ import 'package:get/get.dart';
 // is "ThinkingFishAssist" because upstream uses it for folders and service names;
 // anything a person reads uses kAppDisplayName instead.
 const String kAppDisplayName = 'Thinking Fish Assist';
-const String kTfaProductVersion = '1.0.0';
+const String kTfaProductVersion = '1.0.1';
 const String kTfaUpstreamVersion = '1.4.9';
 const String kTfaSupportUrl = 'https://thinking.fish/assist';
 const String kTfaPrivacyUrl = 'https://thinking.fish/privacy';

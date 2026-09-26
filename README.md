@@ -23,9 +23,26 @@ and logo have been removed from the user interface (they remain only in attribut
 | Links go to thinking.fish; About shows the source-code link | Flutter UI |
 | CI builds only Windows x64, macOS (Apple silicon + Intel) and Android | `.github/workflows/tfa-build.yml`, `tfa-release.yml` |
 
-The internal app name is `ThinkingFishAssist` (no spaces) because upstream uses it for the install
-folder, Windows service, launchd labels, config directory and URI scheme; people see
-"Thinking Fish Assist".
+### Two names, on purpose
+
+People see **Thinking Fish Assist** everywhere: window titles, tray, About, the Windows Start
+menu and desktop shortcuts, Apps & features, the installer, the macOS Finder/Dock/menu bar name
+(via `flutter/macos/Runner/en.lproj/InfoPlist.strings`), the DMG volume, the Android launcher,
+and the download file names (`Thinking-Fish-Assist-...`; GitHub turns spaces in asset names
+into dots, so hyphens).
+
+Internally the app is **`ThinkingFishAssist`** (no spaces), because upstream builds unquoted
+command lines and paths from it: the Windows service name, `C:\Program Files\ThinkingFishAssist`,
+the config directory (which holds each machine's ID and password, so renaming it would orphan
+every install), the `thinkingfishassist://` URI scheme, `/Applications/ThinkingFishAssist.app`
+and its launchd plists. `src/branding.rs` holds both (`APP_NAME`, `DISPLAY_NAME`).
+
+## Icons and logo
+
+Andrew's design (26 Sep 2026, `tfa/brand/reference/`) redrawn as SVG by
+`tfa/brand/draw_brand.py`; `tfa/brand/make_icons.py` renders every platform's icons from it.
+App icons use the mark only (headset + swoosh); the full logo with the wordmark is used in the
+About box, the MSI installer and on the website.
 
 ## Server
 
@@ -40,10 +57,10 @@ The workflow builds everything and attaches it to a GitHub release:
 
 | File | What |
 |---|---|
-| `ThinkingFishAssist-windows-x64.exe` | Run-or-install (runs without installing; has an Install button) |
-| `ThinkingFishAssist-windows-x64.msi` | For managed/silent installs (`msiexec /i ... /qn`) |
-| `ThinkingFishAssist-macos-aarch64.dmg` / `-x86_64.dmg` | Apple silicon / Intel Macs |
-| `ThinkingFishAssist-android.apk` | Android (signed off-GitHub, see below) |
+| `Thinking-Fish-Assist-windows-x64.exe` | Run-or-install (runs without installing; has an Install button) |
+| `Thinking-Fish-Assist-windows-x64.msi` | For managed/silent installs (`msiexec /i ... /qn`) |
+| `Thinking-Fish-Assist-macos-aarch64.dmg` / `-x86_64.dmg` | Apple silicon / Intel Macs |
+| `Thinking-Fish-Assist-android.apk` | Android (signed off-GitHub, see below) |
 
 Before bumping the version, change it in `src/branding.rs` (`PRODUCT_VERSION`),
 `flutter/lib/consts.dart` (`kTfaProductVersion`), `flutter/pubspec.yaml` and `VERSION` in

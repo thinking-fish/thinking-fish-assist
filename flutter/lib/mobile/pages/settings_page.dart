@@ -1102,6 +1102,11 @@ void showAbout(OverlayDialogManager dialogManager) {
     return CustomAlertDialog(
       title: Text(translate('About RustDesk')),
       content: Wrap(direction: Axis.vertical, spacing: 12, children: [
+        // Thinking Fish Assist: the full logo (see tfa/brand/make_icons.py).
+        Image.asset('assets/logo_full.png',
+            width: 96,
+            height: 96,
+            errorBuilder: (ctx, e, st) => const SizedBox.shrink()),
         Text('Version: $kTfaProductVersion (RustDesk $version)'),
         InkWell(
             onTap: () async {

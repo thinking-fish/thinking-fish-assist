@@ -1,0 +1,5 @@
+/* Thinking Fish Assist: the name people see for ThinkingFishAssist.app (Finder,
+   Dock, Launchpad, Spotlight, the menu bar). build.py copies this file into
+   Contents/Resources/en.lproj after `flutter build macos`; see Info.plist. */
+"CFBundleDisplayName" = "Thinking Fish Assist";
+"CFBundleName" = "Thinking Fish Assist";

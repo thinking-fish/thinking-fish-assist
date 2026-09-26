@@ -1420,15 +1420,50 @@ pub fn check_update_broker_process() -> ResultType<()> {
     Ok(())
 }
 
+/// Thinking Fish Assist: the name on the Start menu folder, the Start menu / desktop /
+/// Startup shortcuts. People read these, so they use the spaced display name
+/// ("Thinking Fish Assist"). Everything else here (service, exe, install folder,
+/// registry keys, firewall rule, URI scheme) keeps the internal, space-free
+/// `crate::get_app_name()` because upstream builds command lines from it unquoted.
+/// Shortcut paths are always quoted in the scripts below, so a space is safe here.
+fn shortcut_name() -> String {
+    let app_name = crate::get_app_name();
+    if app_name == crate::branding::APP_NAME {
+        crate::branding::DISPLAY_NAME.to_owned()
+    } else {
+        app_name
+    }
+}
+
+/// Thinking Fish Assist: delete the shortcuts 1.0.0 created under the internal name
+/// ("ThinkingFishAssist.lnk", the "ThinkingFishAssist" Start menu folder and the
+/// "ThinkingFishAssist Tray.lnk" Startup entry), so an upgrade does not leave two
+/// of each. Harmless when they are not there.
+fn legacy_shortcut_dels() -> String {
+    let old = crate::get_app_name();
+    if old == shortcut_name() {
+        return "".to_owned();
+    }
+    format!(
+        "
+if exist \"%PUBLIC%\\Desktop\\{old}.lnk\" del /f /q \"%PUBLIC%\\Desktop\\{old}.lnk\"
+if exist \"%PROGRAMDATA%\\Microsoft\\Windows\\Start Menu\\Programs\\Startup\\{old} Tray.lnk\" del /f /q \"%PROGRAMDATA%\\Microsoft\\Windows\\Start Menu\\Programs\\Startup\\{old} Tray.lnk\"
+if exist \"%ProgramData%\\Microsoft\\Windows\\Start Menu\\Programs\\{old}\" rd /s /q \"%ProgramData%\\Microsoft\\Windows\\Start Menu\\Programs\\{old}\"
+if exist \"%PROGRAMDATA%\\Microsoft\\Windows\\Start Menu\\Programs\\{old}.lnk\" del /f /q \"%PROGRAMDATA%\\Microsoft\\Windows\\Start Menu\\Programs\\{old}.lnk\"
+"
+    )
+}
+
 fn get_install_info_with_subkey(subkey: String) -> (String, String, String, String) {
     let mut path = get_reg_of(&subkey, "InstallLocation");
     if path.is_empty() {
         path = get_default_install_path();
     }
     path = path.trim_end_matches('\\').to_owned();
+    // Thinking Fish Assist: the Start menu folder people see uses the display name.
     let start_menu = format!(
         "%ProgramData%\\Microsoft\\Windows\\Start Menu\\Programs\\{}",
-        crate::get_app_name()
+        shortcut_name()
     );
     let exe = format!("{}\\{}.exe", path, crate::get_app_name());
     (subkey, path, start_menu, exe)
@@ -1575,7 +1610,9 @@ pub fn install_me(options: &str, path: String, silent: bool, debug: bool) -> Res
     if versions.len() > 2 {
         version_build = versions[2];
     }
-    let app_name = crate::get_app_name();
+    // Thinking Fish Assist: in install_me `app_name` only names .lnk files, which people
+    // see, so it is the display name here (see shortcut_name()).
+    let app_name = shortcut_name();
 
     let current_exe = std::env::current_exe()?;
 
@@ -1627,8 +1664,7 @@ oLink.Save
     if options.contains("desktopicon") {
         shortcuts = format!(
             "copy /Y \"{}\\{}.lnk\" \"%PUBLIC%\\Desktop\\\"",
-            tmp_path,
-            crate::get_app_name()
+            tmp_path, app_name
         );
         reg_value_desktop_shortcuts = "1".to_owned();
     }
@@ -1723,6 +1759,7 @@ cscript \"{mk_shortcut}\"
 cscript \"{uninstall_shortcut}\"
 {tray_shortcuts}
 {shortcuts}
+{legacy_shortcut_dels}
 copy /Y \"{tmp_path}\\Uninstall {app_name}.lnk\" \"{path}\\\"
 {dels}
 {import_config}
@@ -1732,6 +1769,7 @@ copy /Y \"{tmp_path}\\Uninstall {app_name}.lnk\" \"{path}\\\"
     ",
         display_icon = get_custom_icon(&path, &cur_exe).unwrap_or(exe.to_string()),
         display_name = crate::branding::DISPLAY_NAME,
+        legacy_shortcut_dels = legacy_shortcut_dels(),
         // Thinking Fish Assist: Apps & features shows our product version; `Version` keeps upstream's.
         product_version = crate::branding::PRODUCT_VERSION,
         version = crate::VERSION.replace("-", "."),
@@ -1828,10 +1866,13 @@ fn get_uninstall(kill_self: bool, uninstall_printer: bool) -> String {
     if exist \"{start_menu}\" rd /s /q \"{start_menu}\"
     if exist \"%PUBLIC%\\Desktop\\{app_name}.lnk\" del /f /q \"%PUBLIC%\\Desktop\\{app_name}.lnk\"
     if exist \"%PROGRAMDATA%\\Microsoft\\Windows\\Start Menu\\Programs\\Startup\\{app_name} Tray.lnk\" del /f /q \"%PROGRAMDATA%\\Microsoft\\Windows\\Start Menu\\Programs\\Startup\\{app_name} Tray.lnk\"
+    {legacy_shortcut_dels}
     ",
         before_uninstall=get_before_uninstall(kill_self),
         uninstall_amyuni_idd=get_uninstall_amyuni_idd(),
-        app_name = crate::get_app_name(),
+        // Thinking Fish Assist: shortcuts carry the display name; also remove 1.0.0's.
+        app_name = shortcut_name(),
+        legacy_shortcut_dels = legacy_shortcut_dels(),
     )
 }
 
@@ -3170,11 +3211,14 @@ pub fn uninstall_service(show_new_window: bool, _: bool) -> bool {
     chcp 65001
     sc stop {app_name}
     sc delete {app_name}
+    if exist \"%PROGRAMDATA%\\Microsoft\\Windows\\Start Menu\\Programs\\Startup\\{lnk} Tray.lnk\" del /f /q \"%PROGRAMDATA%\\Microsoft\\Windows\\Start Menu\\Programs\\Startup\\{lnk} Tray.lnk\"
     if exist \"%PROGRAMDATA%\\Microsoft\\Windows\\Start Menu\\Programs\\Startup\\{app_name} Tray.lnk\" del /f /q \"%PROGRAMDATA%\\Microsoft\\Windows\\Start Menu\\Programs\\Startup\\{app_name} Tray.lnk\"
     taskkill /F /IM {broker_exe}
     taskkill /F /IM {app_name}.exe{filter}
     ",
         app_name = crate::get_app_name(),
+        // Thinking Fish Assist: the Startup shortcut has the display name (1.0.0's had the internal one).
+        lnk = shortcut_name(),
         broker_exe = WIN_TOPMOST_INJECTED_PROCESS_EXE,
     );
     if let Err(err) = run_cmds(cmds, false, "uninstall") {
@@ -3200,12 +3244,13 @@ pub fn install_service() -> bool {
 chcp 65001
 taskkill /F /IM {app_name}.exe{filter}
 cscript \"{tray_shortcut}\"
-copy /Y \"{tmp_path}\\{app_name} Tray.lnk\" \"%PROGRAMDATA%\\Microsoft\\Windows\\Start Menu\\Programs\\Startup\\\"
+copy /Y \"{tmp_path}\\{lnk} Tray.lnk\" \"%PROGRAMDATA%\\Microsoft\\Windows\\Start Menu\\Programs\\Startup\\\"
 {import_config}
 {create_service}
 if exist \"{tray_shortcut}\" del /f /q \"{tray_shortcut}\"
     ",
         app_name = crate::get_app_name(),
+        lnk = shortcut_name(), // Thinking Fish Assist: display name on the shortcut
         import_config = get_import_config(&exe),
         create_service = get_create_service(&exe),
     );
@@ -3677,7 +3722,8 @@ Set oLink = oWS.CreateShortcut(sLinkFile)
     {shortcut_icon_location}
 oLink.Save
         ",
-            app_name = crate::get_app_name(),
+            // Thinking Fish Assist: display name (every caller copies/deletes it by the same name)
+            app_name = shortcut_name(),
         ),
         "vbs",
         "tray_shortcut",
@@ -3713,7 +3759,8 @@ fn get_create_service(exe: &str) -> String {
     if stop {
         format!("
 if exist \"%PROGRAMDATA%\\Microsoft\\Windows\\Start Menu\\Programs\\Startup\\{app_name} Tray.lnk\" del /f /q \"%PROGRAMDATA%\\Microsoft\\Windows\\Start Menu\\Programs\\Startup\\{app_name} Tray.lnk\"
-", app_name = crate::get_app_name())
+if exist \"%PROGRAMDATA%\\Microsoft\\Windows\\Start Menu\\Programs\\Startup\\{old} Tray.lnk\" del /f /q \"%PROGRAMDATA%\\Microsoft\\Windows\\Start Menu\\Programs\\Startup\\{old} Tray.lnk\"
+", app_name = shortcut_name(), old = crate::get_app_name())
     } else {
         format!("
 sc create {app_name} binpath= \"\\\"{exe}\\\" --service\" start= auto DisplayName= \"{display_name} Service\"

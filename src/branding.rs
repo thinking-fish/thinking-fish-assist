@@ -27,7 +27,7 @@ pub const APP_NAME: &str = "ThinkingFishAssist";
 pub const DISPLAY_NAME: &str = "Thinking Fish Assist";
 /// Our product version (upstream's protocol version stays in `crate::VERSION`,
 /// because peers compare it to decide which features the other side supports).
-pub const PRODUCT_VERSION: &str = "1.0.0";
+pub const PRODUCT_VERSION: &str = "1.0.1";
 /// The upstream RustDesk release this build is based on.
 pub const UPSTREAM_VERSION: &str = "1.4.9";
 pub const SOURCE_URL: &str = "https://github.com/thinking-fish/thinking-fish-assist";

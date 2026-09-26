@@ -45,7 +45,7 @@ env:
   VCPKG_COMMIT_ID: "120deac3062162151622ca4860575a33844ba10b"
   ARMV7_VCPKG_COMMIT_ID: "6f29f12e82a8293156836ad81cc9bf5af41fe836" # 2025.01.13, got "/opt/artifacts/vcpkg/vcpkg: No such file or directory" with latest version
   # Thinking Fish Assist product version (file names, MSI version). Upstream RustDesk = 1.4.9.
-  VERSION: "1.0.0"
+  VERSION: "1.0.1"
   NDK_VERSION: "r28c"
   #signing keys env variable checks
   ANDROID_SIGNING_KEY: "${{ secrets.ANDROID_SIGNING_KEY }}"
@@ -340,7 +340,7 @@ jobs:
           python3 ./generate.py -f ../../rustdesk/ -o . -e ../../rustdesk/ThinkingFishAssist.exe
           popd
           mkdir -p ./SignOutput
-          mv ./target/release/rustdesk-portable-packer.exe ./SignOutput/ThinkingFishAssist-windows-x64.exe
+          mv ./target/release/rustdesk-portable-packer.exe ./SignOutput/Thinking-Fish-Assist-windows-x64.exe
 
       - name: Add MSBuild to PATH
         uses: microsoft/setup-msbuild@6fb02220983dee41ce7ae257b6f4d8f9bf5ed4ce # v2
@@ -352,14 +352,18 @@ jobs:
         if: env.UPLOAD_ARTIFACT == 'true'
         run: |
           pushd ./res/msi
+          # Thinking Fish Assist installer artwork (tfa/brand/make_icons.py); preprocess.py
+          # adds a WixVariable for each bitmap it finds in Package/Resources.
+          New-Item -ItemType Directory -Force Package/Resources | Out-Null
+          Copy-Item ../../tfa/brand/msi/*.bmp Package/Resources/
           python preprocess.py --arp -d ../../rustdesk --app-name ThinkingFishAssist --manufacturer "Thinking Fish Ltd" --version ${{ env.VERSION }}
           python ../../tfa/msi_branding.py
           nuget restore msi.sln
           $msiPlatform = if ('${{ matrix.job.arch }}' -eq 'aarch64') { 'ARM64' } else { 'x64' }
           msbuild msi.sln -p:Configuration=Release -p:Platform=$msiPlatform /p:TargetVersion=Windows10
           $msi = Get-ChildItem ./Package/bin/*/Release/en-us/Package.msi | Select-Object -First 1
-          mv $msi.FullName ../../SignOutput/ThinkingFishAssist-windows-x64.msi
-          sha256sum ../../SignOutput/ThinkingFishAssist-*
+          mv $msi.FullName ../../SignOutput/Thinking-Fish-Assist-windows-x64.msi
+          sha256sum ../../SignOutput/Thinking-Fish-Assist-*
 
       - name: Sign installer + MSI (Azure Artifact Signing)
         if: env.UPLOAD_ARTIFACT == 'true' && vars.WINDOWS_SIGNING == 'azure'
@@ -380,7 +384,7 @@ jobs:
         if: env.UPLOAD_ARTIFACT == 'true'
         shell: bash
         run: |
-          cd SignOutput && sha256sum ThinkingFishAssist-* > SHA256SUMS-windows.txt && cat SHA256SUMS-windows.txt
+          cd SignOutput && sha256sum Thinking-Fish-Assist-* > SHA256SUMS-windows.txt && cat SHA256SUMS-windows.txt
 
       - name: Publish Release
         uses: softprops/action-gh-release@de2c0eb89ae2a093876385947365aca7b0e5f844 # v1
@@ -389,7 +393,7 @@ jobs:
           prerelease: ${{ inputs.prerelease }}
           tag_name: ${{ env.TAG_NAME }}
           files: |
-            ./SignOutput/ThinkingFishAssist-*
+            ./SignOutput/Thinking-Fish-Assist-*
             ./SignOutput/SHA256SUMS-windows.txt
 
   # The fallback for the flutter version, we use Sciter for 32bit Windows.
@@ -554,14 +558,14 @@ jobs:
           CREATE_DMG="$(command -v create-dmg)"
           CREATE_DMG="$(readlink -f "$CREATE_DMG")"
           sed -i -e 's/MAXIMUM_UNMOUNTING_ATTEMPTS=3/MAXIMUM_UNMOUNTING_ATTEMPTS=7/' "$CREATE_DMG"
-          create-dmg --volname "Thinking Fish Assist" --icon "ThinkingFishAssist.app" 200 190 --hide-extension "ThinkingFishAssist.app" --window-size 800 400 --app-drop-link 600 185 ThinkingFishAssist-macos-${{ matrix.job.arch }}.dmg ./flutter/build/macos/Build/Products/Release/ThinkingFishAssist.app
+          create-dmg --volname "Thinking Fish Assist" --icon "ThinkingFishAssist.app" 200 190 --hide-extension "ThinkingFishAssist.app" --window-size 800 400 --app-drop-link 600 185 Thinking-Fish-Assist-macos-${{ matrix.job.arch }}.dmg ./flutter/build/macos/Build/Products/Release/ThinkingFishAssist.app
 
       - name: Upload unsigned macOS app
         if: env.UPLOAD_ARTIFACT == 'true'
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: unsigned-macos-${{ matrix.job.arch }}
-          path: ThinkingFishAssist-macos-${{ matrix.job.arch }}.dmg # can not upload the directory directly or tar.gz, which destroy the link structure, causing the codesign failed
+          path: Thinking-Fish-Assist-macos-${{ matrix.job.arch }}.dmg # can not upload the directory directly or tar.gz, which destroy the link structure, causing the codesign failed
 
       - name: Codesign app and create signed dmg
         if: env.MACOS_P12_BASE64 != null && env.UPLOAD_ARTIFACT == 'true'
@@ -580,7 +584,7 @@ jobs:
           rm -rf *.dmg || true
           APP=./flutter/build/macos/Build/Products/Release/ThinkingFishAssist.app
           codesign --force --options runtime --timestamp -s "${{ secrets.MACOS_CODESIGN_IDENTITY }}" --deep --strict "$APP" -vvv
-          DMG=ThinkingFishAssist-macos-${{ matrix.job.arch }}.dmg
+          DMG=Thinking-Fish-Assist-macos-${{ matrix.job.arch }}.dmg
           create-dmg --volname "Thinking Fish Assist" --icon "ThinkingFishAssist.app" 200 190 --hide-extension "ThinkingFishAssist.app" --window-size 800 400 --app-drop-link 600 185 "$DMG" "$APP"
           codesign --force --timestamp -s "${{ secrets.MACOS_CODESIGN_IDENTITY }}" "$DMG" -vvv
           echo "${{ secrets.APPLE_API_KEY_P8_BASE64 }}" | base64 --decode > /tmp/asc.p8
@@ -596,7 +600,7 @@ jobs:
           prerelease: ${{ inputs.prerelease }}
           tag_name: ${{ env.TAG_NAME }}
           files: |
-            ThinkingFishAssist-macos-${{ matrix.job.arch }}.dmg
+            Thinking-Fish-Assist-macos-${{ matrix.job.arch }}.dmg
 
   build-rustdesk-android:
     needs: [generate-bridge]
@@ -926,7 +930,7 @@ jobs:
           flutter build apk "--${{ env.reltype }}" --target-platform android-arm64,android-arm,android-x64${{ env.x86_target }}
           popd
           mkdir -p signed-apk
-          mv ./flutter/build/app/outputs/flutter-apk/app-${{ env.reltype }}.apk signed-apk/ThinkingFishAssist-android.apk
+          mv ./flutter/build/app/outputs/flutter-apk/app-${{ env.reltype }}.apk signed-apk/Thinking-Fish-Assist-android.apk
 
       # https://github.com/r0adkll/sign-android-release/issues/84#issuecomment-1889636075
       - name: Setup sign tool version variable
@@ -958,15 +962,15 @@ jobs:
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: unsigned-android-universal
-          path: signed-apk/ThinkingFishAssist-android.apk
+          path: signed-apk/Thinking-Fish-Assist-android.apk
 
       - name: Name the signed APK
         if: env.ANDROID_SIGNING_KEY != null && env.UPLOAD_ARTIFACT == 'true'
         shell: bash
         run: |
           mkdir -p out
-          cp "${{ steps.sign-rustdesk.outputs.signedReleaseFile }}" out/ThinkingFishAssist-android.apk
-          cd out && sha256sum ThinkingFishAssist-android.apk > SHA256SUMS-android.txt && cat SHA256SUMS-android.txt
+          cp "${{ steps.sign-rustdesk.outputs.signedReleaseFile }}" out/Thinking-Fish-Assist-android.apk
+          cd out && sha256sum Thinking-Fish-Assist-android.apk > SHA256SUMS-android.txt && cat SHA256SUMS-android.txt
 
       - name: Publish signed apk package
         if: env.ANDROID_SIGNING_KEY != null && env.UPLOAD_ARTIFACT == 'true'
@@ -975,5 +979,5 @@ jobs:
           prerelease: ${{ inputs.prerelease }}
           tag_name: ${{ env.TAG_NAME }}
           files: |
-            out/ThinkingFishAssist-android.apk
+            out/Thinking-Fish-Assist-android.apk
             out/SHA256SUMS-android.txt

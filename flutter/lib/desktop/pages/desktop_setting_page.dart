@@ -2436,6 +2436,13 @@ class _AboutState extends State<_About> {
               const SizedBox(
                 height: 8.0,
               ),
+              // Thinking Fish Assist: the full logo (mark + wordmark), drawn by
+              // tfa/brand/make_icons.py. Hidden if the asset is ever missing.
+              Image.asset('assets/logo_full.png',
+                  width: 120,
+                  height: 120,
+                  errorBuilder: (ctx, e, st) => const SizedBox.shrink())
+                  .marginOnly(bottom: 8.0),
               SelectionArea(
                   child: Text(
                           '${translate('Version')}: $kTfaProductVersion (RustDesk $version)')

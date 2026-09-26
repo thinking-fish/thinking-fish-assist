@@ -88,8 +88,8 @@ Not suitable for unattended support: Android requires the user to start screen s
 MSI (preferred for managed estates):
 
 ```
-msiexec /i ThinkingFishAssist-windows-x64.msi /qn /l*v C:\Windows\Temp\tfassist.log
-msiexec /i ThinkingFishAssist-windows-x64.msi /qn CREATEDESKTOPSHORTCUTS=0 CREATESTARTMENUSHORTCUTS=1 INSTALLPRINTER=0
+msiexec /i Thinking-Fish-Assist-windows-x64.msi /qn /l*v C:\Windows\Temp\tfassist.log
+msiexec /i Thinking-Fish-Assist-windows-x64.msi /qn CREATEDESKTOPSHORTCUTS=0 CREATESTARTMENUSHORTCUTS=1 INSTALLPRINTER=0
 ```
 
 Properties: `INSTALLFOLDER` (default `C:\Program Files\ThinkingFishAssist`), `CREATESTARTMENUSHORTCUTS`,
@@ -98,7 +98,7 @@ Properties: `INSTALLFOLDER` (default `C:\Program Files\ThinkingFishAssist`), `CR
 EXE (same file customers use):
 
 ```
-ThinkingFishAssist-windows-x64.exe --silent-install
+Thinking-Fish-Assist-windows-x64.exe --silent-install
 ```
 
 After either, from an elevated PowerShell:
@@ -110,7 +110,7 @@ $app = "C:\Program Files\ThinkingFishAssist\ThinkingFishAssist.exe"
 & $app --option <key> <value>              # any other setting, e.g. allow-auto-record-incoming Y
 ```
 
-Uninstall: Settings > Apps, or `msiexec /x ThinkingFishAssist-windows-x64.msi /qn`, or
+Uninstall: Settings > Apps, or `msiexec /x Thinking-Fish-Assist-windows-x64.msi /qn`, or
 `"C:\Program Files\ThinkingFishAssist\ThinkingFishAssist.exe" --uninstall`.
 
 macOS has no silent install that can grant screen recording; deploy the DMG with your MDM and have the
